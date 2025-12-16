@@ -19,7 +19,7 @@ echo -e "${BLUE}"
 cat << "EOF"
 ╔═══════════════════════════════════════════════════════════╗
 ║                                                           ║
-║   PostgreSQL HA Cluster - Configuration Setup            ║
+║   PostgreSQL HA Cluster - Configuration Setup             ║
 ║                                                           ║
 ╚═══════════════════════════════════════════════════════════╝
 EOF
