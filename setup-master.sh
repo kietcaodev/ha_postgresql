@@ -36,7 +36,7 @@ CONFIG_FILE="/etc/ha_postgres/config.env"
 if [ ! -f "$CONFIG_FILE" ]; then
     echo -e "${RED}✗ Không tìm thấy file cấu hình: $CONFIG_FILE${NC}"
     echo ""
-    echo "Vui lòng chạy ./00-setup-config.sh trước để tạo cấu hình!"
+    echo "Vui lòng chạy ./scripts/00-setup-config.sh trước để tạo cấu hình!"
     exit 1
 fi
 
@@ -97,20 +97,20 @@ if [ "$NODE_TYPE" = "db" ]; then
     
     # Bước 1: Setup hosts
     echo -e "${BLUE}[1/5] Cấu hình /etc/hosts...${NC}"
-    ./01-setup-hosts.sh
+    ./scripts/01-setup-hosts.sh
     echo -e "${GREEN}✓ Hoàn thành${NC}"
     echo ""
     
     # Bước 2: Install packages
     echo -e "${BLUE}[2/5] Cài đặt packages (PostgreSQL, Patroni, etcd)...${NC}"
-    ./02-install-packages.sh
+    ./scripts/02-install-packages.sh
     echo -e "${GREEN}✓ Hoàn thành${NC}"
     echo ""
     
     # Bước 3: Cấu hình etcd
     echo -e "${BLUE}[3/5] Cấu hình etcd...${NC}"
     if [ "$NODE_NAME" = "pg1" ]; then
-        ./03-config-etcd-pg1.sh
+        ./scripts/03-config-etcd-pg1.sh
     elif [ "$NODE_NAME" = "pg2" ]; then
         echo -e "${YELLOW}⚠ Trước khi tiếp tục, cần thực hiện trên pg1:${NC}"
         echo "   etcdctl --endpoints=http://${PG1_IP}:${ETCD_CLIENT_PORT} member add pg2 --peer-urls=http://${PG2_IP}:${ETCD_PEER_PORT}"
@@ -121,7 +121,7 @@ if [ "$NODE_TYPE" = "db" ]; then
             echo -e "${RED}Vui lòng thực hiện lệnh trên pg1 trước!${NC}"
             exit 1
         fi
-        ./03-config-etcd-pg2.sh
+        ./scripts/03-config-etcd-pg2.sh
     else
         echo -e "${YELLOW}⚠ Trước khi tiếp tục, cần thực hiện trên pg1:${NC}"
         echo "   etcdctl --endpoints=http://${PG1_IP}:${ETCD_CLIENT_PORT} member add pg3 --peer-urls=http://${PG3_IP}:${ETCD_PEER_PORT}"
@@ -132,20 +132,20 @@ if [ "$NODE_TYPE" = "db" ]; then
             echo -e "${RED}Vui lòng thực hiện lệnh trên pg1 trước!${NC}"
             exit 1
         fi
-        ./03-config-etcd-pg3.sh
+        ./scripts/03-config-etcd-pg3.sh
     fi
     echo -e "${GREEN}✓ Hoàn thành${NC}"
     echo ""
     
     # Bước 4: Cấu hình Patroni
     echo -e "${BLUE}[4/5] Cấu hình Patroni...${NC}"
-    ./04-config-patroni.sh
+    ./scripts/04-config-patroni.sh
     echo -e "${GREEN}✓ Hoàn thành${NC}"
     echo ""
     
     # Bước 5: Cài đặt PGBouncer
     echo -e "${BLUE}[5/5] Cài đặt PGBouncer...${NC}"
-    ./05-install-pgbouncer.sh
+    ./scripts/05-install-pgbouncer.sh
     echo -e "${GREEN}✓ Hoàn thành${NC}"
     echo ""
     
@@ -181,13 +181,13 @@ elif [ "$NODE_TYPE" = "haproxy" ]; then
     
     # Setup hosts
     echo -e "${BLUE}[1/2] Cấu hình /etc/hosts...${NC}"
-    ./01-setup-hosts.sh
+    ./scripts/01-setup-hosts.sh
     echo -e "${GREEN}✓ Hoàn thành${NC}"
     echo ""
     
     # Install HAProxy
     echo -e "${BLUE}[2/2] Cài đặt HAProxy...${NC}"
-    ./06-install-haproxy.sh
+    ./scripts/06-install-haproxy.sh
     echo -e "${GREEN}✓ Hoàn thành${NC}"
     echo ""
     

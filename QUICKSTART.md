@@ -8,10 +8,10 @@
 
 ```bash
 cd /opt/ha_postgres
-chmod +x *.sh
+chmod +x *.sh scripts/*.sh
 
 # Chạy script cấu hình
-./00-setup-config.sh
+./scripts/00-setup-config.sh
 ```
 
 **Nhập thông tin khi được hỏi:**
@@ -44,7 +44,7 @@ scp /etc/ha_postgres/config.env root@<pg3_ip>:/etc/ha_postgres/
 scp /etc/ha_postgres/config.env root@<haproxy_ip>:/etc/ha_postgres/
 ```
 
-**Hoặc:** Chạy `./00-setup-config.sh` trên mỗi node với cùng thông tin
+**Hoặc:** Chạy `./scripts/00-setup-config.sh` trên mỗi node với cùng thông tin
 
 ---
 

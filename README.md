@@ -28,8 +28,8 @@ Ví dụ: Nếu PG1_IP của bạn là `192.168.1.10`, thay `<PG1_IP>` bằng `1
 **Chạy trên node đầu tiên hoặc trên máy local, sau đó copy sang các node:**
 
 ```bash
-chmod +x *.sh
-./00-setup-config.sh
+chmod +x *.sh scripts/*.sh
+./scripts/00-setup-config.sh
 ```
 
 Script này sẽ:
@@ -44,7 +44,7 @@ Script này sẽ:
 scp /etc/ha_postgres/config.env root@<node_ip>:/etc/ha_postgres/config.env
 ```
 
-Hoặc chạy `./00-setup-config.sh` trên từng node với cùng thông tin.
+Hoặc chạy `./scripts/00-setup-config.sh` trên từng node với cùng thông tin.
 
 ### Bước 1: Triển khai các nodes
 

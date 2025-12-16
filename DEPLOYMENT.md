@@ -86,7 +86,7 @@ cd /opt/ha_postgres
 # Hoặc clone từ git repository
 
 # Set quyền thực thi
-chmod +x *.sh
+chmod +x *.sh scripts/*.sh
 ```
 
 ## Bước 1: Triển khai Database Node 1 (pg1)
