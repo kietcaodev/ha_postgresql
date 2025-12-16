@@ -80,8 +80,8 @@ mkdir -p /etc/etcd
 
 # Cài đặt Patroni
 echo ">> Cài đặt Patroni..."
-pip3 install --upgrade pip setuptools wheel
-pip3 install patroni[etcd3] python-etcd
+pip3 install --upgrade pip setuptools wheel --break-system-packages
+pip3 install patroni[etcd3] python-etcd --break-system-packages
 
 # Tạo thư mục cho Patroni
 mkdir -p /etc/patroni
