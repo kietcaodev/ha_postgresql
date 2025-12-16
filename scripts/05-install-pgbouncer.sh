@@ -47,12 +47,7 @@ systemctl stop pgbouncer
 # Backup file cấu hình gốc
 cp /etc/pgbouncer/pgbouncer.ini /etc/pgbouncer/pgbouncer.ini.backup
 
-# Tạo file userlist.txt với password
-cat > /etc/pgbouncer/userlist.txt <<EOF
-"postgres" "${POSTGRES_PASSWORD}"
-EOF
-
-# Tạo file cấu hình pgbouncer.ini
+# Tạo file cấu hình pgbouncer.ini trước
 cat > /etc/pgbouncer/pgbouncer.ini <<EOF
 [databases]
 * = host=127.0.0.1 port=${PG_PORT}
@@ -60,7 +55,7 @@ cat > /etc/pgbouncer/pgbouncer.ini <<EOF
 [pgbouncer]
 listen_addr = 0.0.0.0
 listen_port = ${PGBOUNCER_PORT}
-auth_type = md5
+auth_type = scram-sha-256
 auth_file = /etc/pgbouncer/userlist.txt
 logfile = /var/log/postgresql/pgbouncer.log
 pidfile = /var/run/postgresql/pgbouncer.pid
@@ -76,11 +71,49 @@ max_client_conn = 1000
 idle_transaction_timeout = 60
 EOF
 
-# Set quyền cho các file
-chown postgres:postgres /etc/pgbouncer/userlist.txt
+# Set quyền cho pgbouncer.ini
 chown postgres:postgres /etc/pgbouncer/pgbouncer.ini
-chmod 640 /etc/pgbouncer/userlist.txt
 chmod 640 /etc/pgbouncer/pgbouncer.ini
+
+# Đợi PostgreSQL và Patroni khởi động hoàn toàn
+echo ">> Đợi PostgreSQL sẵn sàng..."
+for i in {1..30}; do
+    if sudo -u postgres psql -p ${PG_PORT} -c "SELECT 1" >/dev/null 2>&1; then
+        echo "✓ PostgreSQL đã sẵn sàng"
+        break
+    fi
+    if [ $i -eq 30 ]; then
+        echo "⚠ PostgreSQL chưa sẵn sàng, tiếp tục nhưng có thể cần cập nhật userlist sau"
+    fi
+    sleep 2
+done
+
+# Tạo file userlist.txt với SCRAM hash từ PostgreSQL
+echo ">> Tạo userlist với SCRAM-SHA-256 hash từ PostgreSQL..."
+if sudo -u postgres psql -p ${PG_PORT} -c "SELECT 1" >/dev/null 2>&1; then
+    # Lấy SCRAM hash từ PostgreSQL
+    sudo -u postgres psql -p ${PG_PORT} -t -A -c \
+      "SELECT '\"' || usename || '\" \"' || passwd || '\"' 
+       FROM pg_shadow 
+       WHERE usename IN ('postgres', 'admin', 'percona');" \
+      > /etc/pgbouncer/userlist.txt
+    
+    echo "✓ Đã tạo userlist với SCRAM hash"
+else
+    # Fallback: tạo file tạm với plaintext (sẽ cần update sau)
+    echo "⚠ Không thể kết nối PostgreSQL, tạo userlist tạm thời"
+    cat > /etc/pgbouncer/userlist.txt <<EOF
+"postgres" "${POSTGRES_PASSWORD}"
+EOF
+    echo ""
+    echo "⚠ CHÚ Ý: Sau khi PostgreSQL khởi động, chạy lệnh sau để cập nhật userlist:"
+    echo "   sudo -u postgres psql -p ${PG_PORT} -t -A -c \"SELECT '\\\"' || usename || '\\\" \\\"' || passwd || '\\\"' FROM pg_shadow WHERE usename IN ('postgres', 'admin', 'percona');\" | sudo tee /etc/pgbouncer/userlist.txt"
+    echo "   sudo systemctl reload pgbouncer"
+fi
+
+# Set quyền cho userlist
+chown postgres:postgres /etc/pgbouncer/userlist.txt
+chmod 640 /etc/pgbouncer/userlist.txt
 
 # Tạo thư mục log nếu chưa có
 mkdir -p /var/log/postgresql
