@@ -23,7 +23,7 @@ apt upgrade -y
 echo ">> Cài đặt dependencies..."
 apt install -y curl wget gnupg2 lsb-release apt-transport-https ca-certificates \
     python3 python3-pip python3-dev python3-psycopg2 \
-    build-essential libssl-dev libffi-dev
+    build-essential libssl-dev libffi-dev net-tools
 
 # Thêm PostgreSQL APT repository
 echo ">> Thêm PostgreSQL repository..."
