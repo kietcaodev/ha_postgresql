@@ -19,7 +19,7 @@ fi
 
 if [ ! -f "$CONFIG_FILE" ]; then
     echo -e "${RED}✗ Không tìm thấy file cấu hình: $CONFIG_FILE${NC}"
-    echo "Vui lòng chạy ./00-setup-config.sh để tạo cấu hình mới!"
+    echo "Vui lòng chạy ./scripts/00-setup-config.sh để tạo cấu hình mới!"
     exit 1
 fi
 

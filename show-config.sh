@@ -13,7 +13,7 @@ NC='\033[0m'
 
 if [ ! -f "$CONFIG_FILE" ]; then
     echo "✗ Không tìm thấy file cấu hình: $CONFIG_FILE"
-    echo "Vui lòng chạy ./00-setup-config.sh trước!"
+    echo "Vui lòng chạy ./scripts/00-setup-config.sh trước!"
     exit 1
 fi
 

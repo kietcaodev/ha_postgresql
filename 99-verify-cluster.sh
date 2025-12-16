@@ -11,7 +11,7 @@ CONFIG_FILE="/etc/ha_postgres/config.env"
 # Load configuration
 if [ ! -f "$CONFIG_FILE" ]; then
     echo "✗ Không tìm thấy file cấu hình: $CONFIG_FILE"
-    echo "Vui lòng chạy ./00-setup-config.sh trước để tạo cấu hình!"
+    echo "Vui lòng chạy ./scripts/00-setup-config.sh trước để tạo cấu hình!"
     exit 1
 fi
 
