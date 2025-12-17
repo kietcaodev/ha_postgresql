@@ -139,49 +139,21 @@ while true; do
     PG3_IP=$(input_ip "Nhập IP cho Database Node 3 (pg3)" "")
     HAPROXY_IP=$(input_ip "Nhập IP cho HAProxy Node" "")
     
-    echo ""
-    echo -e "${BLUE}═══ Cấu hình Cluster ═══${NC}"
-    echo ""
+    # Hardcoded Cluster Configuration
+    NAMESPACE="pg_percona"
+    SCOPE="pg_cluster"
+    PG_VERSION="18"
+    DATA_DIR="/var/lib/postgresql/18/main"
     
-    read -p "Nhập Namespace [pg_percona]: " NAMESPACE
-    NAMESPACE=${NAMESPACE:-pg_percona}
-    
-    read -p "Nhập Scope/Cluster Name [pg_cluster]: " SCOPE
-    SCOPE=${SCOPE:-pg_cluster}
-    
-    read -p "Nhập PostgreSQL Version [18]: " PG_VERSION
-    PG_VERSION=${PG_VERSION:-18}
-    
-    read -p "Nhập Data Directory [/var/lib/postgresql/${PG_VERSION}/main]: " DATA_DIR
-    DATA_DIR=${DATA_DIR:-/var/lib/postgresql/${PG_VERSION}/main}
-    
-    echo ""
-    echo -e "${BLUE}═══ Cấu hình Network Ports ═══${NC}"
-    echo ""
-    
-    read -p "PostgreSQL Port [5432]: " PG_PORT
-    PG_PORT=${PG_PORT:-5432}
-    
-    read -p "PGBouncer Port [6432]: " PGBOUNCER_PORT
-    PGBOUNCER_PORT=${PGBOUNCER_PORT:-6432}
-    
-    read -p "Patroni REST API Port [8008]: " PATRONI_PORT
-    PATRONI_PORT=${PATRONI_PORT:-8008}
-    
-    read -p "etcd Client Port [2379]: " ETCD_CLIENT_PORT
-    ETCD_CLIENT_PORT=${ETCD_CLIENT_PORT:-2379}
-    
-    read -p "etcd Peer Port [2380]: " ETCD_PEER_PORT
-    ETCD_PEER_PORT=${ETCD_PEER_PORT:-2380}
-    
-    read -p "HAProxy Primary Port [5000]: " HAPROXY_PRIMARY_PORT
-    HAPROXY_PRIMARY_PORT=${HAPROXY_PRIMARY_PORT:-5000}
-    
-    read -p "HAProxy Standby Port [5001]: " HAPROXY_STANDBY_PORT
-    HAPROXY_STANDBY_PORT=${HAPROXY_STANDBY_PORT:-5001}
-    
-    read -p "HAProxy Stats Port [7000]: " HAPROXY_STATS_PORT
-    HAPROXY_STATS_PORT=${HAPROXY_STATS_PORT:-7000}
+    # Hardcoded Network Ports
+    PG_PORT="5432"
+    PGBOUNCER_PORT="6432"
+    PATRONI_PORT="8008"
+    ETCD_CLIENT_PORT="2379"
+    ETCD_PEER_PORT="2380"
+    HAPROXY_PRIMARY_PORT="5000"
+    HAPROXY_STANDBY_PORT="5001"
+    HAPROXY_STATS_PORT="7000"
     
     # Hiển thị và xác nhận
     if confirm_config; then
