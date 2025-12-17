@@ -85,8 +85,9 @@ confirm_config() {
     echo "  pg2: $PG2_IP"
     echo "  pg3: $PG3_IP"
     echo ""
-    echo -e "${GREEN}HAProxy Node:${NC}"
-    echo "  haproxy: $HAPROXY_IP"
+    echo -e "${GREEN}HAProxy Nodes:${NC}"
+    echo "  haproxy1 (FusionPBX-1): $HAPROXY1_IP"
+    echo "  haproxy2 (FusionPBX-2): $HAPROXY2_IP"
     echo ""
     echo -e "${GREEN}Cluster Configuration:${NC}"
     echo "  Namespace: $NAMESPACE"
@@ -137,7 +138,8 @@ while true; do
     PG1_IP=$(input_ip "Nhập IP cho Database Node 1 (pg1)" "")
     PG2_IP=$(input_ip "Nhập IP cho Database Node 2 (pg2)" "")
     PG3_IP=$(input_ip "Nhập IP cho Database Node 3 (pg3)" "")
-    HAPROXY_IP=$(input_ip "Nhập IP cho HAProxy Node" "")
+    HAPROXY1_IP=$(input_ip "Nhập IP cho HAProxy Node 1 (PBX-Master)" "")
+    HAPROXY2_IP=$(input_ip "Nhập IP cho HAProxy Node 2 (PBX-Standby)" "")
     
     # Hardcoded Cluster Configuration
     NAMESPACE="pg_percona"
@@ -173,8 +175,12 @@ PG1_IP="$PG1_IP"
 PG2_IP="$PG2_IP"
 PG3_IP="$PG3_IP"
 
-# HAProxy Node
-HAPROXY_IP="$HAPROXY_IP"
+# HAProxy Nodes
+HAPROXY1_IP="$HAPROXY1_IP"
+HAPROXY2_IP="$HAPROXY2_IP"
+
+# Backward compatibility (points to first HAProxy)
+HAPROXY_IP="$HAPROXY1_IP"
 
 # Cluster Configuration
 NAMESPACE="$NAMESPACE"
@@ -209,7 +215,15 @@ echo -e "${GREEN}✓ Đã lưu cấu hình vào: $CONFIG_FILE${NC}"
 echo ""
 echo -e "${YELLOW}Các bước tiếp theo:${NC}"
 echo "1. Copy file config này sang tất cả các nodes:"
-echo "   scp $CONFIG_FILE root@<node_ip>:$CONFIG_FILE"
+echo ""
+echo "   # Database nodes"
+echo "   scp $CONFIG_FILE root@${PG1_IP}:$CONFIG_FILE"
+echo "   scp $CONFIG_FILE root@${PG2_IP}:$CONFIG_FILE"
+echo "   scp $CONFIG_FILE root@${PG3_IP}:$CONFIG_FILE"
+echo ""
+echo "   # HAProxy nodes"
+echo "   scp $CONFIG_FILE root@${HAPROXY1_IP}:$CONFIG_FILE"
+echo "   scp $CONFIG_FILE root@${HAPROXY2_IP}:$CONFIG_FILE"
 echo ""
 echo "2. Hoặc chạy script này trên từng node với cùng thông tin"
 echo ""
