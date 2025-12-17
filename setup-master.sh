@@ -147,10 +147,9 @@ echo "1) Database Node - pg1 (${PG1_IP})"
 echo "2) Database Node - pg2 (${PG2_IP})"
 echo "3) Database Node - pg3 (${PG3_IP})"
 echo "4) HAProxy Node (${HAPROXY_IP})"
-echo "5) Install postgres_exporter (trên node hiện tại)"
-echo "6) Exit"
+echo "5) Exit"
 echo ""
-read -p "Nhập lựa chọn (1-6): " choice
+read -p "Nhập lựa chọn (1-5): " choice
 
 case $choice in
     1)
@@ -174,10 +173,6 @@ case $choice in
         NODE_IP="$HAPROXY_IP"
         ;;
     5)
-        NODE_TYPE="exporter"
-        NODE_NAME="postgres_exporter"
-        ;;
-    6)
         echo "Thoát."
         exit 0
         ;;
@@ -383,25 +378,6 @@ elif [ "$NODE_TYPE" = "haproxy" ]; then
     echo "HAProxy Stats UI: http://${HAPROXY_IP}:${HAPROXY_STATS_PORT}/"
     echo "Primary endpoint: ${HAPROXY_IP}:${HAPROXY_PRIMARY_PORT}"
     echo "Replica endpoint: ${HAPROXY_IP}:${HAPROXY_STANDBY_PORT}"
-
-elif [ "$NODE_TYPE" = "exporter" ]; then
-    echo "=== CÀI ĐẶT POSTGRES_EXPORTER ==="
-    log_info "Installing postgres_exporter on current node"
-    echo ""
-    
-    STEP="exporter_install"
-    if is_step_completed "$STEP"; then
-        log_warning "Step already completed: Install postgres_exporter - SKIPPING"
-        echo -e "${YELLOW}⊘ postgres_exporter... (đã hoàn thành, bỏ qua)${NC}"
-    else
-        log_step "Installing postgres_exporter"
-        ./scripts/08-install-postgres-exporter.sh 2>&1 | tee -a "$LOG_FILE"
-        save_checkpoint "$STEP"
-    fi
-    
-    log_info "postgres_exporter installation completed"
-    echo ""
-    echo "Log file: $LOG_FILE"
 fi
 
 echo ""
