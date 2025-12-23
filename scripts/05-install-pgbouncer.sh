@@ -60,7 +60,7 @@ auth_file = /etc/pgbouncer/userlist.txt
 logfile = /var/log/postgresql/pgbouncer.log
 pidfile = /var/run/postgresql/pgbouncer.pid
 admin_users = postgres
-pool_mode = transaction
+pool_mode = session
 
 ignore_startup_parameters = extra_float_digits
 
