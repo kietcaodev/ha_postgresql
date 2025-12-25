@@ -62,13 +62,21 @@ pidfile = /var/run/postgresql/pgbouncer.pid
 admin_users = postgres
 pool_mode = session
 
-ignore_startup_parameters = extra_float_digits
+# Ignore các startup parameters phổ biến từ PHP/web applications
+ignore_startup_parameters = extra_float_digits,application_name,search_path,client_encoding,standard_conforming_strings,DateStyle,IntervalStyle,TimeZone
 
+# Connection pooling settings
 default_pool_size = 20
 reserve_pool_size = 5
 max_client_conn = 1000
 
+# Timeout settings
 idle_transaction_timeout = 60
+
+# Logging - chỉ log errors để giảm overhead
+log_connections = 0
+log_disconnections = 0
+log_pooler_errors = 1
 EOF
 
 # Set quyền cho pgbouncer.ini

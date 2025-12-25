@@ -36,7 +36,7 @@ cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.backup.$(date +%Y%m%d_%H%M%
 # Tạo file cấu hình HAProxy
 cat > /etc/haproxy/haproxy.cfg <<EOF
 global
-    maxconn 100
+    maxconn 2000
     log /dev/log local0
     log /dev/log local1 notice
     chroot /var/lib/haproxy
@@ -49,10 +49,11 @@ global
 defaults
     log global
     mode tcp
+    option tcplog
     retries 2
-    timeout client 30m
-    timeout connect 4s
-    timeout server 30m
+    timeout client 3600s
+    timeout connect 5s
+    timeout server 3600s
     timeout check 5s
 
 listen stats
@@ -66,22 +67,33 @@ listen stats
 
 listen primary
     bind *:${HAPROXY_PRIMARY_PORT}
-    option httpchk /primary
+    mode tcp
+    balance leastconn
+    
+    # Health check qua Patroni REST API (HTTP)
+    option httpchk GET /primary
     http-check expect status 200
-    default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions
-    server pg1 ${PG1_IP}:${PGBOUNCER_PORT} maxconn 100 check port ${PATRONI_PORT}
-    server pg2 ${PG2_IP}:${PGBOUNCER_PORT} maxconn 100 check port ${PATRONI_PORT}
-    server pg3 ${PG3_IP}:${PGBOUNCER_PORT} maxconn 100 check port ${PATRONI_PORT}
+    
+    default-server inter 10s fall 3 rise 2
+    
+    server pg1 ${PG1_IP}:${PGBOUNCER_PORT} maxconn 500 check port ${PATRONI_PORT}
+    server pg2 ${PG2_IP}:${PGBOUNCER_PORT} maxconn 500 check port ${PATRONI_PORT}
+    server pg3 ${PG3_IP}:${PGBOUNCER_PORT} maxconn 500 check port ${PATRONI_PORT}
 
 listen standbys
-    balance roundrobin
     bind *:${HAPROXY_STANDBY_PORT}
-    option httpchk /replica
+    mode tcp
+    balance roundrobin
+    
+    # Health check qua Patroni REST API (HTTP)
+    option httpchk GET /replica
     http-check expect status 200
-    default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions
-    server pg1 ${PG1_IP}:${PGBOUNCER_PORT} maxconn 100 check port ${PATRONI_PORT}
-    server pg2 ${PG2_IP}:${PGBOUNCER_PORT} maxconn 100 check port ${PATRONI_PORT}
-    server pg3 ${PG3_IP}:${PGBOUNCER_PORT} maxconn 100 check port ${PATRONI_PORT}
+    
+    default-server inter 10s fall 3 rise 2
+    
+    server pg1 ${PG1_IP}:${PGBOUNCER_PORT} maxconn 500 check port ${PATRONI_PORT}
+    server pg2 ${PG2_IP}:${PGBOUNCER_PORT} maxconn 500 check port ${PATRONI_PORT}
+    server pg3 ${PG3_IP}:${PGBOUNCER_PORT} maxconn 500 check port ${PATRONI_PORT}
 EOF
 
 echo "✓ Đã tạo file cấu hình /etc/haproxy/haproxy.cfg"
