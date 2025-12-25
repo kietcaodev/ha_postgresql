@@ -45,11 +45,16 @@ echo "1. KIỂM TRA ETCD CLUSTER"
 echo "----------------------------------------"
 if command -v etcdctl &> /dev/null; then
     echo ">> Member list:"
-    etcdctl --endpoints=http://${PG1_IP}:${ETCD_CLIENT_PORT} member list
-    echo ""
-    echo ">> Cluster status:"
-    etcdctl endpoint status --endpoints=${PG1_IP}:${ETCD_CLIENT_PORT},${PG2_IP}:${ETCD_CLIENT_PORT},${PG3_IP}:${ETCD_CLIENT_PORT} --write-out=table
-    echo -e "${GREEN}✓ etcd cluster hoạt động bình thường${NC}"
+    # Thử kết nối đến bất kỳ endpoint nào còn hoạt động
+    ETCD_ENDPOINTS="${PG1_IP}:${ETCD_CLIENT_PORT},${PG2_IP}:${ETCD_CLIENT_PORT},${PG3_IP}:${ETCD_CLIENT_PORT}"
+    if etcdctl --endpoints=http://${ETCD_ENDPOINTS} member list 2>/dev/null; then
+        echo ""
+        echo ">> Cluster status:"
+        etcdctl endpoint status --endpoints=${ETCD_ENDPOINTS} --write-out=table 2>/dev/null || echo -e "${YELLOW}⚠ Một số endpoint không phản hồi (có thể đang down)${NC}"
+        echo -e "${GREEN}✓ etcd cluster có quorum${NC}"
+    else
+        echo -e "${RED}✗ Không thể kết nối đến etcd cluster${NC}"
+    fi
 else
     echo -e "${RED}✗ etcdctl không được cài đặt trên node này${NC}"
 fi
@@ -75,13 +80,13 @@ echo "3. KIỂM TRA POSTGRESQL SERVICES"
 echo "----------------------------------------"
 for ip in ${PG1_IP} ${PG2_IP} ${PG3_IP}; do
     echo ">> Kiểm tra $ip:"
-    if curl -s http://$ip:${PATRONI_PORT}/ > /dev/null 2>&1; then
-        role=$(curl -s http://$ip:${PATRONI_PORT}/ | grep -oP '(?<="role":")[^"]*')
-        state=$(curl -s http://$ip:${PATRONI_PORT}/ | grep -oP '(?<="state":")[^"]*')
+    if timeout 3 curl -s http://$ip:${PATRONI_PORT}/ > /dev/null 2>&1; then
+        role=$(timeout 3 curl -s http://$ip:${PATRONI_PORT}/ | grep -oP '(?<="role":")[^"]*' 2>/dev/null || echo "unknown")
+        state=$(timeout 3 curl -s http://$ip:${PATRONI_PORT}/ | grep -oP '(?<="state":")[^"]*' 2>/dev/null || echo "unknown")
         echo -e "   Role: ${YELLOW}$role${NC}"
         echo -e "   State: ${GREEN}$state${NC}"
     else
-        echo -e "   ${RED}✗ Không thể kết nối${NC}"
+        echo -e "   ${RED}✗ Không thể kết nối (node có thể đang down)${NC}"
     fi
 done
 echo ""

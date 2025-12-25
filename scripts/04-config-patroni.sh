@@ -59,6 +59,11 @@ fi
 
 echo "=== Cấu hình Patroni cho node ${NODE_NAME} (${NODE_IP}) ==="
 
+# Dừng và disable PostgreSQL service (Patroni sẽ quản lý)
+echo ">> Dừng PostgreSQL service (nếu đang chạy)..."
+systemctl stop postgresql 2>/dev/null || true
+systemctl disable postgresql 2>/dev/null || true
+
 # Nhập password từ người dùng
 echo ""
 echo ">> Nhập mật khẩu cho các tài khoản PostgreSQL:"
