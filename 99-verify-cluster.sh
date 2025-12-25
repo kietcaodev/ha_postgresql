@@ -80,9 +80,10 @@ echo "3. KIỂM TRA POSTGRESQL SERVICES"
 echo "----------------------------------------"
 for ip in ${PG1_IP} ${PG2_IP} ${PG3_IP}; do
     echo ">> Kiểm tra $ip:"
-    if timeout 3 curl -s http://$ip:${PATRONI_PORT}/ > /dev/null 2>&1; then
-        role=$(timeout 3 curl -s http://$ip:${PATRONI_PORT}/ | grep -oP '(?<="role":")[^"]*' 2>/dev/null || echo "unknown")
-        state=$(timeout 3 curl -s http://$ip:${PATRONI_PORT}/ | grep -oP '(?<="state":")[^"]*' 2>/dev/null || echo "unknown")
+    response=$(timeout 3 curl -s http://$ip:${PATRONI_PORT}/ 2>/dev/null)
+    if [ -n "$response" ]; then
+        role=$(echo "$response" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('role', 'unknown'))" 2>/dev/null || echo "unknown")
+        state=$(echo "$response" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('state', 'unknown'))" 2>/dev/null || echo "unknown")
         echo -e "   Role: ${YELLOW}$role${NC}"
         echo -e "   State: ${GREEN}$state${NC}"
     else
