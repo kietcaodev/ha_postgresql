@@ -25,6 +25,42 @@ apt install -y curl wget gnupg2 lsb-release apt-transport-https ca-certificates 
     python3 python3-pip python3-dev python3-psycopg2 \
     build-essential libssl-dev libffi-dev net-tools
 
+# Cài đặt và cấu hình Chrony cho đồng bộ thời gian
+echo ">> Cài đặt chrony..."
+apt install -y chrony
+
+# Set timezone Asia/Ho_Chi_Minh
+echo ">> Cấu hình timezone Asia/Ho_Chi_Minh..."
+timedatectl set-timezone Asia/Ho_Chi_Minh
+
+# Cấu hình chrony với NTP servers Việt Nam
+cat > /etc/chrony/chrony.conf <<'CHRONEOF'
+# NTP servers
+pool vn.pool.ntp.org iburst
+pool asia.pool.ntp.org iburst
+pool 0.asia.pool.ntp.org iburst
+pool 1.asia.pool.ntp.org iburst
+
+# Record the rate at which the system clock gains/losses time
+driftfile /var/lib/chrony/chrony.drift
+
+# Allow the system clock to be stepped in the first three updates
+makestep 1.0 3
+
+# Enable kernel synchronization of the real-time clock (RTC)
+rtcsync
+
+# Specify directory for log files
+logdir /var/log/chrony
+CHRONEOF
+
+# Restart và enable chrony
+systemctl restart chrony
+systemctl enable chrony
+
+echo ">> Kiểm tra trạng thái chrony..."
+chronyc tracking
+
 # Thêm PostgreSQL APT repository
 echo ">> Thêm PostgreSQL repository..."
 sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
@@ -93,7 +129,8 @@ chmod 700 /data/pgsql
 cat > /etc/systemd/system/patroni.service <<'EOF'
 [Unit]
 Description=Patroni PostgreSQL HA
-After=syslog.target network.target
+After=syslog.target network.target etcd.service
+Wants=etcd.service
 
 [Service]
 Type=simple
@@ -103,7 +140,8 @@ ExecStart=/usr/local/bin/patroni /etc/patroni/patroni.yml
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=process
 TimeoutSec=30
-Restart=no
+Restart=on-failure
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
